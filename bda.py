@@ -19,7 +19,7 @@ def create_table(connection, cursor, table_name):
     cursor.execute("CREATE TYPE logging_level_categories AS ENUM ('DEBUG', 'INFO', 'WARN', 'ERROR')")
 
     # CREATE TYPE retrieval_stage_categories
-    cursor.execute("CREATE TYPE retrieval_stage_categories AS ENUM ('event_processing', 'ght_data_retrieval', 'api_client', 'retriever', 'ghtorrent')")
+    cursor.execute("CREATE TYPE retrieval_stage_categories AS ENUM ('event_processing', 'ght_data_retrieval', 'api_client', 'retriever', 'ghtorrent', 'geolocator')")
 
     # CREATE TABLE bda_gh_torrent
     cursor.execute("CREATE TABLE {0} (logging_level logging_level_categories, timestamp CHAR(25), downloader_id VARCHAR(15), retrieval_stage retrieval_stage_categories, operation_part TEXT)".format(table_name))
@@ -39,7 +39,7 @@ def load_file_into_db(filename, connection, cursor):
                 cursor.execute(insert_query_string, (logging_level, timestamp, downloader_id, retrieval_stage, operation_part))
                 connection.commit()
             except (Exception, psycopg2.DatabaseError) as e:
-                print('Error: {}'.format(e))
+                print('Error: {0} {1}'.format(e, each_row))
                 cursor.execute("ROLLBACK")
                 connection.commit()
                 pass
