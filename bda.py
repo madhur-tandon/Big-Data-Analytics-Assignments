@@ -30,12 +30,12 @@ def load_file_into_db(filename, connection, cursor):
     with open(filename) as file:
         data = file.read()
         all_rows = data.split('\n')
-        for each_row in all_rows:
-            standard_part, operation_part = each_row.split('.rb: ')
-            logging_level, timestamp, other = standard_part.split(', ')
-            downloader_id, retrieval_stage = other.split(' -- ')
-            insert_query_string = "INSERT INTO bda_gh_torrent (logging_level, timestamp, downloader_id, retrieval_stage, operation_part) VALUES ({0}, {1}, {2}, {3}, {4})".format(logging_level, timestamp, downloader_id, retrieval_stage, operation_part)
+        for each_row in all_rows[0:5]:
             try:
+                standard_part, operation_part = each_row.split('.rb: ')
+                logging_level, timestamp, other = standard_part.split(', ')
+                downloader_id, retrieval_stage = other.split(' -- ')
+                insert_query_string = "INSERT INTO bda_gh_torrent (logging_level, timestamp, downloader_id, retrieval_stage, operation_part) VALUES ({0}, {1}, {2}, {3}, {4})".format(logging_level, timestamp, downloader_id, retrieval_stage, operation_part)
                 cursor.execute(insert_query_string)
             except (Exception, psycopg2.DatabaseError) as e:
                 print('Error: {}'.format(e))
@@ -45,7 +45,7 @@ def load_file_into_db(filename, connection, cursor):
 def task_2(connection, cursor, table_name):
     query = "SELECT count(*) FROM {0}".format(table_name)
     cursor.execute(query)
-    count = int(cur.fetchone()[0])
+    count = int(cursor.fetchone()[0])
     print(count)
 
 
