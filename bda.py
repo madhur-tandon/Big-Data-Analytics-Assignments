@@ -67,8 +67,8 @@ if __name__ == '__main__':
     filename = 'ghtorrent-logs.txt'
 
     connection, cursor = connect_to_db(db_name, user, password)
-    create_table(connection, cursor, table_name)
-    load_file_into_db(filename, connection, cursor)
+    # create_table(connection, cursor, table_name)
+    # load_file_into_db(filename, connection, cursor)
     task_2(connection, cursor, table_name)
     task_3(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
