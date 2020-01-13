@@ -36,7 +36,6 @@ def load_file_into_db(filename, connection, cursor):
                 logging_level, timestamp, other = standard_part.split(', ')
                 downloader_id, retrieval_stage = other.split(' -- ')
                 insert_query_string = "INSERT INTO bda_gh_torrent (logging_level, timestamp, downloader_id, retrieval_stage, operation_part) VALUES (%s, %s, %s, %s, %s)"
-                print(insert_query_string)
                 cursor.execute(insert_query_string, (logging_level, timestamp, downloader_id, retrieval_stage, operation_part))
                 connection.commit()
             except (Exception, psycopg2.DatabaseError) as e:
