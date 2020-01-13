@@ -30,7 +30,7 @@ def load_file_into_db(filename, connection, cursor):
     with open(filename) as file:
         data = file.read()
         all_rows = data.split('\n')
-        for each_row in all_rows[0:5]:
+        for each_row in all_rows:
             try:
                 standard_part, operation_part = each_row.split('.rb: ')
                 logging_level, timestamp, other = standard_part.split(', ')
@@ -38,10 +38,12 @@ def load_file_into_db(filename, connection, cursor):
                 insert_query_string = "INSERT INTO bda_gh_torrent (logging_level, timestamp, downloader_id, retrieval_stage, operation_part) VALUES (%s, %s, %s, %s, %s)"
                 print(insert_query_string)
                 cursor.execute(insert_query_string, (logging_level, timestamp, downloader_id, retrieval_stage, operation_part))
+                connection.commit()
             except (Exception, psycopg2.DatabaseError) as e:
                 print('Error: {}'.format(e))
+                cursor.execute("ROLLBACK")
+                connection.commit()
                 pass
-        connection.commit()
 
 def task_2(connection, cursor, table_name):
     query = "SELECT count(*) FROM {0}".format(table_name)
@@ -49,6 +51,14 @@ def task_2(connection, cursor, table_name):
     count = int(cursor.fetchone()[0])
     print(count)
 
+def task_3(connection, cursor, table_name):
+    query = "SELECT count(*) FROM {0} WHERE logging_level = 'WARN'".format(table_name)
+    cursor.execute(query)
+    count = int(cursor.fetchone()[0])
+    print(count)
+
+def task_4(connection, cursor, table_name):
+    pass
 
 if __name__ == '__main__':
     db_name = 'postgres_db'
@@ -61,4 +71,5 @@ if __name__ == '__main__':
     create_table(connection, cursor, table_name)
     load_file_into_db(filename, connection, cursor)
     task_2(connection, cursor, table_name)
+    task_3(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
