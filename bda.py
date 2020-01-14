@@ -1,5 +1,18 @@
 import psycopg2
 
+def eliminate_extra_info(url_text):
+        url_text = url_text[0]
+        i = -1
+        count = 0
+        while True:
+            i = url_text.find('/', i+1)
+            if i == -1:
+                return url_text[:-1]
+            else:
+                count+=1
+                if count == 3:
+                    return url_text[:i]
+
 def connect_to_db(db_name, username, pwd, host='127.0.0.1', port='5432'):
     connection = psycopg2.connect(database = db_name, user = username, password = pwd, host = host, port = port)
     cursor = connection.cursor()
@@ -57,19 +70,6 @@ def task_3(connection, cursor, table_name):
     print(count)
 
 def task_4(connection, cursor, table_name):
-    def eliminate_extra_info(url_text):
-        url_text = url_text[0]
-        i = -1
-        count = 0
-        while True:
-            i = url_text.find('/', i+1)
-            if i == -1:
-                return url_text[:-1]
-            else:
-                count+=1
-                if count == 3:
-                    return url_text[:i]
-
     query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -92,6 +92,15 @@ def task_7(connection, cursor, table_name):
     cursor.execute(query)
     print(cursor.fetchone())
 
+def task_8(connection, cursor, table_name):
+    """
+    Slight different from Task 4 query, remove DISTINCT here
+    """
+    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(table_name)
+    cursor.execute(query)
+    cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
+    print(max(set(cleaned_url_text), key=cleaned_url_text.count))
+
 if __name__ == '__main__':
     db_name = 'postgres_db'
     user = 'madhur'
@@ -108,4 +117,5 @@ if __name__ == '__main__':
     task_5(connection, cursor, table_name)
     task_6(connection, cursor, table_name)
     task_7(connection, cursor, table_name)
+    task_8(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
