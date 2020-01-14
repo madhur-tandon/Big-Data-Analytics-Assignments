@@ -87,6 +87,11 @@ def task_6(connection, cursor, table_name):
     for i in cursor:
         print(i)
 
+def task_7(connection, cursor, table_name):
+    query = "SELECT SUBSTRING(timestamp, STRPOS(timestamp, 'T')+1, 2) AS hour, COUNT(*) frequency FROM {0} GROUP BY hour ORDER BY frequency DESC LIMIT 1".format(table_name)
+    cursor.execute(query)
+    print(cursor.fetchone())
+
 if __name__ == '__main__':
     db_name = 'postgres_db'
     user = 'madhur'
@@ -102,4 +107,5 @@ if __name__ == '__main__':
     task_4(connection, cursor, table_name)
     task_5(connection, cursor, table_name)
     task_6(connection, cursor, table_name)
+    task_7(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
