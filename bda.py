@@ -57,7 +57,23 @@ def task_3(connection, cursor, table_name):
     print(count)
 
 def task_4(connection, cursor, table_name):
-    pass
+    def eliminate_extra_info(url_text):
+        url_text = url_text[0]
+        i = -1
+        count = 0
+        while True:
+            i = url_text.find('/', i+1)
+            if i == -1:
+                return url_text[:-1]
+            else:
+                count+=1
+                if count == 3:
+                    return url_text[:i]
+    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(table_name)
+    cursor.execute(query)
+    cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
+    print(len(cleaned_url_text))
+    print(len(set(cleaned_url_text)))
 
 if __name__ == '__main__':
     db_name = 'postgres_db'
@@ -71,4 +87,5 @@ if __name__ == '__main__':
     # load_file_into_db(filename, connection, cursor)
     task_2(connection, cursor, table_name)
     task_3(connection, cursor, table_name)
+    task_4(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
