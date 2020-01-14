@@ -81,6 +81,12 @@ def task_5(connection, cursor, table_name):
     for c in cursor:
         print(c)
 
+def task_6(connection, cursor, table_name):
+    query = "SELECT downloader_id, COUNT(*) frequency FROM {0} WHERE SUBSTRING(operation_part, STRPOS(operation_part, 'Failed'), 6) = 'Failed' AND SUBSTRING(operation_part, STRPOS(operation_part, 'http'), 4) = 'http' GROUP BY downloader_id ORDER BY frequency DESC LIMIT 10".format(table_name)
+    cursor.execute(query)
+    for i in cursor:
+        print(i)
+
 if __name__ == '__main__':
     db_name = 'postgres_db'
     user = 'madhur'
@@ -95,4 +101,5 @@ if __name__ == '__main__':
     task_3(connection, cursor, table_name)
     task_4(connection, cursor, table_name)
     task_5(connection, cursor, table_name)
+    task_6(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
