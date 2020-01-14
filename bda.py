@@ -69,10 +69,10 @@ def task_4(connection, cursor, table_name):
                 count+=1
                 if count == 3:
                     return url_text[:i]
+
     query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
-    print(len(cleaned_url_text))
     print(len(set(cleaned_url_text)))
 
 if __name__ == '__main__':
