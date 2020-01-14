@@ -1,17 +1,17 @@
 import psycopg2
 
 def eliminate_extra_info(url_text):
-        url_text = url_text[0]
-        i = -1
-        count = 0
-        while True:
-            i = url_text.find('/', i+1)
-            if i == -1:
-                return url_text[:-1]
-            else:
-                count+=1
-                if count == 3:
-                    return url_text[:i]
+    url_text = url_text[0]
+    i = -1
+    count = 0
+    while True:
+        i = url_text.find('/', i+1)
+        if i == -1:
+            return url_text[:-1]
+        else:
+            count+=1
+            if count == 3:
+                return url_text[:i]
 
 def connect_to_db(db_name, username, pwd, host='127.0.0.1', port='5432'):
     connection = psycopg2.connect(database = db_name, user = username, password = pwd, host = host, port = port)
@@ -84,8 +84,8 @@ def task_5(connection, cursor, table_name):
 def task_6(connection, cursor, table_name):
     query = "SELECT downloader_id, COUNT(*) frequency FROM {0} WHERE SUBSTRING(operation_part, STRPOS(operation_part, 'Failed'), 6) = 'Failed' AND SUBSTRING(operation_part, STRPOS(operation_part, 'http'), 4) = 'http' GROUP BY downloader_id ORDER BY frequency DESC LIMIT 10".format(table_name)
     cursor.execute(query)
-    for i in cursor:
-        print(i)
+    for c in cursor:
+        print(c)
 
 def task_7(connection, cursor, table_name):
     query = "SELECT SUBSTRING(timestamp, STRPOS(timestamp, 'T')+1, 2) AS hour, COUNT(*) frequency FROM {0} GROUP BY hour ORDER BY frequency DESC LIMIT 1".format(table_name)
@@ -100,6 +100,15 @@ def task_8(connection, cursor, table_name):
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
     print(max(set(cleaned_url_text), key=cleaned_url_text.count))
+
+def task_9(connection, cursor, table_name):
+    """
+    'geolocator' queries have no access keys
+    """
+    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'Access')+8, 11) AS access_key, COUNT(*) frequency FROM {0} WHERE retrieval_stage != 'geolocator' AND SUBSTRING(operation_part, STRPOS(operation_part, 'Failed'), 6) = 'Failed' GROUP BY access_key ORDER BY frequency DESC LIMIT 10".format(table_name)
+    cursor.execute(query)
+    for c in cursor:
+        print(c)
 
 if __name__ == '__main__':
     db_name = 'postgres_db'
@@ -118,4 +127,5 @@ if __name__ == '__main__':
     task_6(connection, cursor, table_name)
     task_7(connection, cursor, table_name)
     task_8(connection, cursor, table_name)
+    task_9(connection, cursor, table_name)
     close_connection_to_db(connection, cursor)
