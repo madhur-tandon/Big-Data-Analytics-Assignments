@@ -190,6 +190,17 @@ def task_12(filename, connection, cursor):
     print(count)
 
 
+def task_13(connection, cursor):
+    # answer is 94, takes very long to compute though
+    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')), SUBSTRING(url, STRPOS(url, 'repos/')) FROM bda_gh_torrent, interesting WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo' AND STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')), SUBSTRING(url, STRPOS(url, 'repos/')))>0"
+    cursor.execute(query)
+    count = 0
+    for c in cursor:
+        count += 1
+        print(c)
+    print(count)
+
+
 if __name__ == '__main__':
     db_name = 'postgres_db'
     user = 'madhur'
@@ -201,15 +212,16 @@ if __name__ == '__main__':
     connection, cursor = connect_to_db(db_name, user, password)
     # create_table(connection, cursor, table_name)
     # load_file_into_db(filename, connection, cursor)
-    task_2(connection, cursor, table_name)
-    task_3(connection, cursor, table_name)
-    task_4(connection, cursor, table_name)
-    task_5(connection, cursor, table_name)
-    task_6(connection, cursor, table_name)
-    task_7(connection, cursor, table_name)
-    task_8(connection, cursor, table_name)
-    task_9(connection, cursor, table_name)
-    task_10(connection, cursor, table_name)
-    task_11(connection, cursor, table_name)
-    task_12(filename_task_12, connection, cursor)
+    # task_2(connection, cursor, table_name)
+    # task_3(connection, cursor, table_name)
+    # task_4(connection, cursor, table_name)
+    # task_5(connection, cursor, table_name)
+    # task_6(connection, cursor, table_name)
+    # task_7(connection, cursor, table_name)
+    # task_8(connection, cursor, table_name)
+    # task_9(connection, cursor, table_name)
+    # task_10(connection, cursor, table_name)
+    # task_11(connection, cursor, table_name)
+    # task_12(filename_task_12, connection, cursor)
+    task_13(connection, cursor)
     close_connection_to_db(connection, cursor)
