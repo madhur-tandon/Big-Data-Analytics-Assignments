@@ -1,5 +1,8 @@
 import psycopg2
 import time
+import pandas as pd
+import sqlalchemy
+from sqlalchemy import create_engine
 
 
 def eliminate_extra_info(url_text):
@@ -161,13 +164,40 @@ def task_11(connection, cursor, table_name):
     print(end - start)
 
 
+def task_12(filename, connection, cursor):
+    cursor.execute('DROP TABLE IF EXISTS interesting')
+    connection.commit()
+
+    df = pd.read_csv(filename)
+
+    engine = create_engine(
+        'postgresql+psycopg2://madhur:bda_gh_torrent@127.0.0.1:5432/postgres_db')
+
+    df.to_sql('interesting', engine, if_exists='replace', index=False,
+              dtype={'id': sqlalchemy.types.VARCHAR(length=8),
+                     'url': sqlalchemy.types.TEXT,
+                     'owner_id': sqlalchemy.types.VARCHAR(length=8),
+                     'name': sqlalchemy.types.TEXT,
+                     'language': sqlalchemy.types.TEXT,
+                     'created_at': sqlalchemy.types.TIMESTAMP,
+                     'forked_from': sqlalchemy.types.VARCHAR(length=10),
+                     'deleted': sqlalchemy.types.BOOLEAN,
+                     'updated_at': sqlalchemy.types.TEXT})
+
+    query = "SELECT count(*) FROM interesting"
+    cursor.execute(query)
+    count = int(cursor.fetchone()[0])
+    print(count)
+
+
 if __name__ == '__main__':
     db_name = 'postgres_db'
     user = 'madhur'
     password = 'bda_gh_torrent'
     table_name = 'bda_gh_torrent'
     filename = 'ghtorrent-logs.txt'
-
+    filename_task_12 = 'important-repos.csv'
+    table_name_task_12 = 'interesting'
     connection, cursor = connect_to_db(db_name, user, password)
     # create_table(connection, cursor, table_name)
     # load_file_into_db(filename, connection, cursor)
@@ -181,4 +211,5 @@ if __name__ == '__main__':
     task_9(connection, cursor, table_name)
     task_10(connection, cursor, table_name)
     task_11(connection, cursor, table_name)
+    task_12(filename_task_12, connection, cursor)
     close_connection_to_db(connection, cursor)
