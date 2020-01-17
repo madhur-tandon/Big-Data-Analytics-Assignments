@@ -147,7 +147,7 @@ def task_10(connection, cursor, table_name):
         table_name)
     cursor.execute(create_index_query)
     start = time.time()
-    query = "SELECT DISTINCT operation_part FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
+    query = "SELECT DISTINCT operation_part FROM {0} WHERE downloader_id = 'ghtorrent-22' AND (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -160,7 +160,7 @@ def task_11(connection, cursor, table_name):
     drop_index_query = "DROP INDEX downloader_id_index"
     cursor.execute(drop_index_query)
     start = time.time()
-    query = "SELECT DISTINCT operation_part FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
+    query = "SELECT DISTINCT operation_part FROM {0} WHERE downloader_id = 'ghtorrent-22' AND (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
