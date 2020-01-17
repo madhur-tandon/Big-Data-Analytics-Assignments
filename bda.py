@@ -77,7 +77,7 @@ def load_file_into_db(filename, connection, cursor):
                 downloader_id, retrieval_stage = other.split(' -- ')
                 insert_query_string = ("INSERT INTO bda_gh_torrent (logging_level, timestamp, downloader_id, retrieval_stage, operation_part) "
                                        "VALUES (%s, %s, %s, %s, %s)"
-                                      )
+                                       )
                 cursor.execute(insert_query_string, (logging_level, timestamp,
                                                      downloader_id, retrieval_stage, operation_part))
                 connection.commit()
@@ -91,7 +91,7 @@ def load_file_into_db(filename, connection, cursor):
 def task_2(connection, cursor, table_name):
     query = ("SELECT count(*) "
              "FROM {0}"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     count = int(cursor.fetchone()[0])
     print(count)
@@ -101,7 +101,7 @@ def task_3(connection, cursor, table_name):
     query = ("SELECT count(*) "
              "FROM {0} "
              "WHERE logging_level = 'WARN'"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     count = int(cursor.fetchone()[0])
     print(count)
@@ -111,7 +111,7 @@ def task_4(connection, cursor, table_name):
     query = ("SELECT DISTINCT operation_part "
              "FROM {0} "
              "WHERE (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
     print(len(set(cleaned_url_text)))
@@ -124,7 +124,7 @@ def task_5(connection, cursor, table_name):
              "GROUP BY downloader_id "
              "ORDER BY frequency DESC "
              "LIMIT 10"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     for c in cursor:
         print(c)
@@ -137,7 +137,7 @@ def task_6(connection, cursor, table_name):
              "GROUP BY downloader_id "
              "ORDER BY frequency "
              "DESC LIMIT 10"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     for c in cursor:
         print(c)
@@ -149,7 +149,7 @@ def task_7(connection, cursor, table_name):
              "GROUP BY hour "
              "ORDER BY frequency DESC "
              "LIMIT 1"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     print(cursor.fetchone())
 
@@ -162,7 +162,7 @@ def task_8(connection, cursor, table_name):
     query = ("SELECT operation_part "
              "FROM {0} "
              "WHERE (logging_level = 'WARN') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
     print(max(set(cleaned_url_text), key=cleaned_url_text.count))
@@ -178,7 +178,7 @@ def task_9(connection, cursor, table_name):
              "GROUP BY access_key "
              "ORDER BY frequency DESC "
              "LIMIT 10"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     for c in cursor:
         print(c)
@@ -187,13 +187,13 @@ def task_9(connection, cursor, table_name):
 def task_10(connection, cursor, table_name):
     create_index_query = ("CREATE INDEX IF NOT EXISTS downloader_id_index "
                           "ON {0} (downloader_id)"
-                         ).format(table_name)
+                          ).format(table_name)
     cursor.execute(create_index_query)
     start = time.time()
     query = ("SELECT DISTINCT operation_part "
              "FROM {0} "
              "WHERE downloader_id = 'ghtorrent-22' AND (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
     print(len(set(cleaned_url_text)))
@@ -208,7 +208,7 @@ def task_11(connection, cursor, table_name):
     query = ("SELECT DISTINCT operation_part "
              "FROM {0} "
              "WHERE downloader_id = 'ghtorrent-22' AND (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0"
-            ).format(table_name)
+             ).format(table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
     print(len(set(cleaned_url_text)))
@@ -216,14 +216,14 @@ def task_11(connection, cursor, table_name):
     print(end - start)
 
 
-def task_12(filename, connection, cursor):
+def task_12(filename, connection, cursor, username):
     cursor.execute('DROP TABLE IF EXISTS interesting')
     connection.commit()
 
     df = pd.read_csv(filename)
 
     engine = create_engine(
-        'postgresql+psycopg2://taejas:bda_gh_torrent@127.0.0.1:5432/postgres_db')
+        'postgresql+psycopg2://{0}:bda_gh_torrent@127.0.0.1:5432/postgres_db'.format(username))
 
     # updated_at cannot be TIMESTAMP since postgres doesn't accept 0000-00-00 00:00:00
     df.to_sql('interesting', engine, if_exists='replace', index=False,
@@ -239,7 +239,7 @@ def task_12(filename, connection, cursor):
 
     query = ("SELECT count(*) "
              "FROM interesting"
-            )
+             )
     cursor.execute(query)
     count = int(cursor.fetchone()[0])
     print(count)
@@ -249,7 +249,7 @@ def task_13(connection, cursor):
     query = ("SELECT COUNT(*) "
              "FROM bda_gh_torrent, interesting "
              "WHERE (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, url)>0"
-            )
+             )
     cursor.execute(query)
     count = int(cursor.fetchone()[0])
     print(count)
@@ -262,15 +262,15 @@ def task_14(connection, cursor):
              "GROUP BY url "
              "ORDER BY frequency DESC "
              "LIMIT 1"
-            )
+             )
     cursor.execute(query)
     for c in cursor:
         print(c)
 
 
-if __name__ == '__main__':   
+if __name__ == '__main__':
     db_name = 'postgres_db'
-    user = 'taejas'
+    user = 'madhur'
     password = 'bda_gh_torrent'
     table_name = 'bda_gh_torrent'
     filename = 'ghtorrent-logs.txt'
@@ -310,7 +310,7 @@ if __name__ == '__main__':
     task_11(connection, cursor, table_name)
     print()
     print("-----TASK 12-----")
-    task_12(filename_task_12, connection, cursor)
+    task_12(filename_task_12, connection, cursor, user)
     print()
     print("-----TASK 13-----")
     task_13(connection, cursor)
