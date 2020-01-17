@@ -6,17 +6,20 @@ from sqlalchemy import create_engine
 
 
 def eliminate_extra_info(url_text):
-    url_text = url_text[0]
+    if type(url_text) == tuple:
+        url_text = url_text[0]
+    http_pos = url_text.find('http')
     i = -1
     count = 0
     while True:
         i = url_text.find('/', i+1)
         if i == -1:
-            return url_text[:-1]
+            i = url_text.find('?')
+            return url_text[http_pos:i]
         else:
             count += 1
-            if count == 3:
-                return url_text[:i]
+            if count == 6:
+                return url_text[http_pos:i]
 
 
 def connect_to_db(db_name, username, pwd, host='127.0.0.1', port='5432'):
@@ -87,7 +90,7 @@ def task_3(connection, cursor, table_name):
 
 
 def task_4(connection, cursor, table_name):
-    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(
+    query = "SELECT DISTINCT operation_part FROM {0} WHERE (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -119,8 +122,9 @@ def task_7(connection, cursor, table_name):
 def task_8(connection, cursor, table_name):
     """
     Slight different from Task 4 query, remove DISTINCT here
+    only considering logging_level as WARN since python post processing of figuring out max in last line takes too much time with both WARN and INFO
     """
-    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
+    query = "SELECT operation_part FROM {0} WHERE (logging_level = 'WARN') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -143,7 +147,7 @@ def task_10(connection, cursor, table_name):
         table_name)
     cursor.execute(create_index_query)
     start = time.time()
-    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
+    query = "SELECT DISTINCT operation_part FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -156,7 +160,7 @@ def task_11(connection, cursor, table_name):
     drop_index_query = "DROP INDEX downloader_id_index"
     cursor.execute(drop_index_query)
     start = time.time()
-    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
+    query = "SELECT DISTINCT operation_part FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -210,16 +214,16 @@ if __name__ == '__main__':
     connection, cursor = connect_to_db(db_name, user, password)
     # create_table(connection, cursor, table_name)
     # load_file_into_db(filename, connection, cursor)
-    # task_2(connection, cursor, table_name)
-    # task_3(connection, cursor, table_name)
-    # task_4(connection, cursor, table_name)
-    # task_5(connection, cursor, table_name)
-    # task_6(connection, cursor, table_name)
-    # task_7(connection, cursor, table_name)
+    task_2(connection, cursor, table_name)
+    task_3(connection, cursor, table_name)
+    task_4(connection, cursor, table_name)
+    task_5(connection, cursor, table_name)
+    task_6(connection, cursor, table_name)
+    task_7(connection, cursor, table_name)
     task_8(connection, cursor, table_name)
     task_9(connection, cursor, table_name)
     task_10(connection, cursor, table_name)
     task_11(connection, cursor, table_name)
-    # task_12(filename_task_12, connection, cursor)
-    # task_13(connection, cursor)
+    task_12(filename_task_12, connection, cursor)
+    task_13(connection, cursor)
     close_connection_to_db(connection, cursor)
