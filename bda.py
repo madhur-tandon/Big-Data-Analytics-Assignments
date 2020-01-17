@@ -203,6 +203,13 @@ def task_13(connection, cursor):
     print(count)
 
 
+def task_14(connection, cursor):
+    query = "SELECT url, COUNT(*) frequency FROM bda_gh_torrent, interesting WHERE (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'Failed')>0 AND STRPOS(operation_part, url)>0 GROUP BY url ORDER BY frequency DESC LIMIT 1"
+    cursor.execute(query)
+    for c in cursor:
+        print(c)
+
+
 if __name__ == '__main__':
     db_name = 'postgres_db'
     user = 'madhur'
@@ -226,4 +233,5 @@ if __name__ == '__main__':
     task_11(connection, cursor, table_name)
     task_12(filename_task_12, connection, cursor)
     task_13(connection, cursor)
+    task_14(connection, cursor)
     close_connection_to_db(connection, cursor)
