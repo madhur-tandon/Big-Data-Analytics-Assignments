@@ -95,14 +95,15 @@ def task_4(connection, cursor, table_name):
 
 
 def task_5(connection, cursor, table_name):
-    query = "SELECT downloader_id, COUNT(*) frequency FROM {0} WHERE SUBSTRING(operation_part, STRPOS(operation_part, 'http'), 4) = 'http' GROUP BY downloader_id ORDER BY frequency DESC LIMIT 10".format(table_name)
+    query = "SELECT downloader_id, COUNT(*) frequency FROM {0} WHERE STRPOS(operation_part, 'http')>0 GROUP BY downloader_id ORDER BY frequency DESC LIMIT 10".format(
+        table_name)
     cursor.execute(query)
     for c in cursor:
         print(c)
 
 
 def task_6(connection, cursor, table_name):
-    query = "SELECT downloader_id, COUNT(*) frequency FROM {0} WHERE SUBSTRING(operation_part, STRPOS(operation_part, 'Failed'), 6) = 'Failed' AND SUBSTRING(operation_part, STRPOS(operation_part, 'http'), 4) = 'http' GROUP BY downloader_id ORDER BY frequency DESC LIMIT 10".format(table_name)
+    query = "SELECT downloader_id, COUNT(*) frequency FROM {0} WHERE STRPOS(operation_part, 'Failed')>0 AND STRPOS(operation_part, 'http')>0 GROUP BY downloader_id ORDER BY frequency DESC LIMIT 10".format(table_name)
     cursor.execute(query)
     for c in cursor:
         print(c)
@@ -119,7 +120,7 @@ def task_8(connection, cursor, table_name):
     """
     Slight different from Task 4 query, remove DISTINCT here
     """
-    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(
+    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -130,7 +131,7 @@ def task_9(connection, cursor, table_name):
     """
     'geolocator' queries have no access keys
     """
-    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'Access')+8, 11) AS access_key, COUNT(*) frequency FROM {0} WHERE retrieval_stage != 'geolocator' AND SUBSTRING(operation_part, STRPOS(operation_part, 'Failed'), 6) = 'Failed' GROUP BY access_key ORDER BY frequency DESC LIMIT 10".format(
+    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'Access')+8, 11) AS access_key, COUNT(*) frequency FROM {0} WHERE retrieval_stage != 'geolocator' AND STRPOS(operation_part, 'Failed')>0 GROUP BY access_key ORDER BY frequency DESC LIMIT 10".format(
         table_name)
     cursor.execute(query)
     for c in cursor:
@@ -142,7 +143,7 @@ def task_10(connection, cursor, table_name):
         table_name)
     cursor.execute(create_index_query)
     start = time.time()
-    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(
+    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -155,7 +156,7 @@ def task_11(connection, cursor, table_name):
     drop_index_query = "DROP INDEX downloader_id_index"
     cursor.execute(drop_index_query)
     start = time.time()
-    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo'".format(
+    query = "SELECT DISTINCT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')) FROM {0} WHERE downloader_id = 'ghtorrent-22' AND logging_level = 'WARN' AND retrieval_stage = 'api_client' AND STRPOS(operation_part, 'repos/')>0".format(
         table_name)
     cursor.execute(query)
     cleaned_url_text = list(map(eliminate_extra_info, cursor.fetchall()))
@@ -173,6 +174,7 @@ def task_12(filename, connection, cursor):
     engine = create_engine(
         'postgresql+psycopg2://madhur:bda_gh_torrent@127.0.0.1:5432/postgres_db')
 
+    # updated_at cannot be TIMESTAMP since postgres doesn't accept 0000-00-00 00:00:00
     df.to_sql('interesting', engine, if_exists='replace', index=False,
               dtype={'id': sqlalchemy.types.VARCHAR(length=8),
                      'url': sqlalchemy.types.TEXT,
@@ -191,13 +193,9 @@ def task_12(filename, connection, cursor):
 
 
 def task_13(connection, cursor):
-    # answer is 94, takes very long to compute though
-    query = "SELECT SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')), SUBSTRING(url, STRPOS(url, 'repos/')) FROM bda_gh_torrent, interesting WHERE logging_level = 'WARN' AND retrieval_stage = 'api_client' AND SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), 4) = 'repo' AND STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/'), STRPOS(SUBSTRING(operation_part, STRPOS(operation_part, 'repos/')), '?')), SUBSTRING(url, STRPOS(url, 'repos/')))>0"
+    query = "SELECT COUNT(*) FROM bda_gh_torrent, interesting WHERE (logging_level = 'WARN' OR logging_level = 'INFO') AND retrieval_stage = 'api_client' AND STRPOS(operation_part, url)>0"
     cursor.execute(query)
-    count = 0
-    for c in cursor:
-        count += 1
-        print(c)
+    count = int(cursor.fetchone()[0])
     print(count)
 
 
@@ -218,10 +216,10 @@ if __name__ == '__main__':
     # task_5(connection, cursor, table_name)
     # task_6(connection, cursor, table_name)
     # task_7(connection, cursor, table_name)
-    # task_8(connection, cursor, table_name)
-    # task_9(connection, cursor, table_name)
-    # task_10(connection, cursor, table_name)
-    # task_11(connection, cursor, table_name)
+    task_8(connection, cursor, table_name)
+    task_9(connection, cursor, table_name)
+    task_10(connection, cursor, table_name)
+    task_11(connection, cursor, table_name)
     # task_12(filename_task_12, connection, cursor)
-    task_13(connection, cursor)
+    # task_13(connection, cursor)
     close_connection_to_db(connection, cursor)
