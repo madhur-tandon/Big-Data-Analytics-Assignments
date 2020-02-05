@@ -96,7 +96,6 @@ def task_6(df):
     df.filter((df.retrieval_stage == 'api_client') & (df.operation_part.contains('Failed'))).groupBy(df.downloader_id).agg(count(df.downloader_id).alias("frequency")).orderBy(desc("frequency")).show(10)
 
 def task_7(df):
-    # USES Substring, takes a lot of time, find alternate solution
     df.select(substring(df.timestamp, 12, 2).alias("hour")).groupBy("hour").agg(count("hour").alias("frequency")).orderBy(desc("frequency")).show(1)
 
 def task_8(df):
@@ -136,11 +135,3 @@ if __name__ == '__main__':
     print("-----TASK 8-----")
     task_8(df)
     print()
-
-    # client = MongoClient()
-    # db = client[db_name]
-    # collection = db[collection_name]
-    # collection_interesting = db[collection_name_task_12]
-
-    # print(collection.count_documents({}))
-    # print(collection_interesting.count_documents({}))
