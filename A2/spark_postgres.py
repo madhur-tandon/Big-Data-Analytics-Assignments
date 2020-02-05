@@ -36,49 +36,44 @@ spark = SparkSession.builder \
             .config("spark.driver.extraClassPath", "postgresql-42.2.6.jar") \
             .getOrCreate()
 
-df = spark.read \
-    .format("jdbc") \
-    .option("url", "jdbc:postgresql://localhost:5432/postgres_db") \
-    .option("dbtable", "bda_gh_torrent") \
-    .option("user", "madhur") \
-    .option("password", "bda_gh_torrent") \
-    .load()
+def get_db_as_spark_dataframe(username, table_name):
+    df = spark.read \
+        .format("jdbc") \
+        .option("url", "jdbc:postgresql://localhost:5432/postgres_db") \
+        .option("dbtable", table_name) \
+        .option("user", username) \
+        .option("password", "bda_gh_torrent") \
+        .load()
+    
+    return df
 
-df2 = spark.read \
-    .format("jdbc") \
-    .option("url", "jdbc:postgresql://localhost:5432/postgres_db") \
-    .option("dbtable", "interesting") \
-    .option("user", "madhur") \
-    .option("password", "bda_gh_torrent") \
-    .load()
-
-def task_2():
+def task_2(df):
     print(df.count())
 
-def task_3():
+def task_3(df):
     print(df.filter(df.logging_level == 'WARN').count())
 
-def task_4():
+def task_4(df):
     print(df.filter(((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
     
-def task_5():
+def task_5(df):
     df.filter(df.retrieval_stage == 'api_client').groupBy(df.downloader_id).agg(count(df.downloader_id).alias("frequency")).orderBy(desc("frequency")).show(10)
 
-def task_6():
+def task_6(df):
     df.filter((df.retrieval_stage == 'api_client') & (df.operation_part.contains('Failed'))).groupBy(df.downloader_id).agg(count(df.downloader_id).alias("frequency")).orderBy(desc("frequency")).show(10)
 
-def task_7():
+def task_7(df):
     # USES Substring, takes a lot of time, find alternate solution
     df.select(substring(df.timestamp, 12, 2).alias("hour")).groupBy("hour").agg(count("hour").alias("frequency")).orderBy(desc("frequency")).show(1)
 
-def task_8():
+def task_8(df):
     df.filter((df.logging_level == 'WARN') & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).rdd.map(eliminate_extra_info).toDF().groupBy("repo").agg(count("repo").alias("frequency")).orderBy(desc("frequency")).show(1, False)
 
-def task_9():
+def task_9(df):
     # USES Substring, will take a lot of time, skip for now
     pass
 
-def task_10(connection, cursor):
+def task_10(df, connection, cursor):
     create_index_query = ("CREATE INDEX IF NOT EXISTS downloader_id_index "
                           "ON bda_gh_torrent (downloader_id)"
                           )
@@ -88,7 +83,7 @@ def task_10(connection, cursor):
     end = time.time()
     print(end - start)
 
-def task_11(connection, cursor):
+def task_11(df, connection, cursor):
     drop_index_query = "DROP INDEX downloader_id_index"
     cursor.execute(drop_index_query)
     start = time.time()
@@ -96,14 +91,14 @@ def task_11(connection, cursor):
     end = time.time()
     print(end - start)
 
-def task_12():
+def task_12(df2):
     print(df2.count())
 
-def task_13():
+def task_13(df, df2):
     condition = df.operation_part.contains(df2.url)
     print(df.filter(((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client')).join(df2, condition, 'inner').count())
 
-def task_14():
+def task_14(df, df2):
     condition = df.operation_part.contains(df2.url)
     df.filter(((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('Failed'))).join(df2, condition, 'inner').groupBy(df2.url).agg(count(df2.url).alias("frequency")).orderBy(desc("frequency")).show(1, False)
 
@@ -112,44 +107,46 @@ if __name__ == '__main__':
     user = 'madhur'
     password = 'bda_gh_torrent'
     connection, cursor = connect_to_db(db_name, user, password)
-    # print("-----TASK 2-----")
-    # task_2()
-    # print()
-    # print("-----TASK 3-----")
-    # task_3()
-    # print()
-    # print("-----TASK 4-----")
-    # task_4()
-    # print()
-    # print("-----TASK 5-----")
-    # task_5()
-    # print()
-    # print("-----TASK 6-----")
-    # task_6()
-    # print()
-    # print("-----TASK 7-----")
-    # task_7()
-    # print()
-    # print("-----TASK 8-----")
-    # task_8()
-    # print()
-    # print("-----TASK 9-----")
-    # task_9()
-    # print()
-    # print("-----TASK 10-----")
-    # task_10(connection, cursor)
-    # print()
-    # print("-----TASK 11-----")
-    # task_11(connection, cursor)
-    # print()
-    # print("-----TASK 12-----")
-    # task_12()
-    # print()
-    # print("-----TASK 13-----")
-    # task_13()
-    # print()
-    # print("-----TASK 14-----")
-    # task_14()
-    # print()
+    df = get_db_as_spark_dataframe(user, 'bda_gh_torrent')
+    df2 = get_db_as_spark_dataframe(user, 'interesting')
+    print("-----TASK 2-----")
+    task_2(df)
+    print()
+    print("-----TASK 3-----")
+    task_3(df)
+    print()
+    print("-----TASK 4-----")
+    task_4(df)
+    print()
+    print("-----TASK 5-----")
+    task_5(df)
+    print()
+    print("-----TASK 6-----")
+    task_6(df)
+    print()
+    print("-----TASK 7-----")
+    task_7(df)
+    print()
+    print("-----TASK 8-----")
+    task_8(df)
+    print()
+    print("-----TASK 9-----")
+    task_9(df)
+    print()
+    print("-----TASK 10-----")
+    task_10(df, connection, cursor)
+    print()
+    print("-----TASK 11-----")
+    task_11(df, connection, cursor)
+    print()
+    print("-----TASK 12-----")
+    task_12(df2)
+    print()
+    print("-----TASK 13-----")
+    task_13(df, df2)
+    print()
+    print("-----TASK 14-----")
+    task_14(df, df2)
+    print()
     close_connection_to_db(connection, cursor)
 
