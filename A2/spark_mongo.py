@@ -2,6 +2,7 @@ from pyspark.sql import SparkSession, types, Row
 from pyspark.sql.functions import desc, count, substring
 from pymongo import MongoClient
 import pandas as pd
+import time
 
 def eliminate_extra_info(url_text):
     if type(url_text) == tuple:
@@ -101,6 +102,33 @@ def task_7(df):
 def task_8(df):
     df.filter((df.logging_level == 'WARN') & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).rdd.map(eliminate_extra_info).toDF().groupBy("repo").agg(count("repo").alias("frequency")).orderBy(desc("frequency")).show(1, False)
 
+def task_9(df):
+    # TODO
+    pass
+
+def task_10(df):
+    start = time.time()
+    print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
+    end = time.time()
+    print(end - start)
+
+def task_11(df):
+    start = time.time()
+    print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
+    end = time.time()
+    print(end - start)
+
+def task_12(df2):
+    print(df2.count())
+
+def task_13(df, df2):
+    condition = df.operation_part.contains(df2.url)
+    print(df.filter(((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client')).join(df2, condition, 'inner').count())
+
+def task_14(df, df2):
+    condition = df.operation_part.contains(df2.url)
+    df.filter(((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('Failed'))).join(df2, condition, 'inner').groupBy(df2.url).agg(count(df2.url).alias("frequency")).orderBy(desc("frequency")).show(1, False)
+
 if __name__ == '__main__':
     filename = 'ghtorrent-logs.txt'
     db_name = 'bda_mongo_db'
@@ -134,4 +162,22 @@ if __name__ == '__main__':
     print()
     print("-----TASK 8-----")
     task_8(df)
+    print()
+    print("-----TASK 9-----")
+    task_9(df)
+    print()
+    print("-----TASK 10-----")
+    task_10(df)
+    print()
+    print("-----TASK 11-----")
+    task_11(df)
+    print()
+    print("-----TASK 12-----")
+    task_12(df2)
+    print()
+    print("-----TASK 13-----")
+    task_13(df, df2)
+    print()
+    print("-----TASK 14-----")
+    task_14(df, df2)
     print()
