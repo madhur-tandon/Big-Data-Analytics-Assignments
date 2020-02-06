@@ -63,7 +63,6 @@ def task_6(df):
     df.filter((df.retrieval_stage == 'api_client') & (df.operation_part.contains('Failed'))).groupBy(df.downloader_id).agg(count(df.downloader_id).alias("frequency")).orderBy(desc("frequency")).show(10)
 
 def task_7(df):
-    # USES Substring, takes a lot of time, find alternate solution
     df.select(substring(df.timestamp, 12, 2).alias("hour")).groupBy("hour").agg(count("hour").alias("frequency")).orderBy(desc("frequency")).show(1)
 
 def task_8(df):
@@ -73,19 +72,23 @@ def task_9(df):
     # USES Substring, will take a lot of time, skip for now
     pass
 
-def task_10(df, connection, cursor):
+def task_10(connection, cursor):
     create_index_query = ("CREATE INDEX IF NOT EXISTS downloader_id_index "
                           "ON bda_gh_torrent (downloader_id)"
                           )
     cursor.execute(create_index_query)
+    connection.commit()
+    df = get_db_as_spark_dataframe('madhur', 'bda_gh_torrent')
     start = time.time()
     print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
     end = time.time()
     print(end - start)
 
-def task_11(df, connection, cursor):
+def task_11(connection, cursor):
     drop_index_query = "DROP INDEX downloader_id_index"
     cursor.execute(drop_index_query)
+    connection.commit()
+    df = get_db_as_spark_dataframe('madhur', 'bda_gh_torrent')
     start = time.time()
     print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
     end = time.time()
@@ -134,10 +137,10 @@ if __name__ == '__main__':
     task_9(df)
     print()
     print("-----TASK 10-----")
-    task_10(df, connection, cursor)
+    task_10(connection, cursor)
     print()
     print("-----TASK 11-----")
-    task_11(df, connection, cursor)
+    task_11(connection, cursor)
     print()
     print("-----TASK 12-----")
     task_12(df2)
