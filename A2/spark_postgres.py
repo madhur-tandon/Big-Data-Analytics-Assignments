@@ -31,11 +31,13 @@ def eliminate_extra_info(url_text):
                 return Row(repo=url_text[http_pos:i])
 
 spark = SparkSession.builder \
-            .master("local[*]") \
+            .master("spark://127.0.0.1:7077") \
             .appName("Spark with Postgres") \
             .config("spark.driver.extraClassPath", "postgresql-42.2.6.jar") \
             .config("spark.driver.memory", "2g") \
             .config("spark.executor.memory", "2g") \
+            .config("spark.executor.instances", "2") \
+            .config("spark.executor.cores", "6") \
             .getOrCreate()
 
 def get_db_as_spark_dataframe(username, table_name):

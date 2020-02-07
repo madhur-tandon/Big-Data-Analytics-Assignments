@@ -66,11 +66,13 @@ def load_csv_into_db(filename, db_name, collection_name):
     return db, collection
 
 spark = SparkSession.builder \
-            .master("local[*]") \
+            .master("spark://127.0.0.1:7077") \
             .appName("Spark with MongoDB") \
             .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1") \
             .config("spark.driver.memory", "2g") \
             .config("spark.executor.memory", "2g") \
+            .config("spark.executor.instances", "2") \
+            .config("spark.executor.cores", "6") \
             .getOrCreate()
 
 def get_df_from_db(db_name, collection_name):
