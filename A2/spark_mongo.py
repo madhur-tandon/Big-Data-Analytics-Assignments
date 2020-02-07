@@ -105,13 +105,21 @@ def task_8(df):
 def task_9(df):
     df.filter((df.retrieval_stage != 'geolocator') & (df.operation_part.contains('Failed'))).withColumn("access_key", col("operation_part").substr(instr(col("operation_part"), 'Access')+8, lit(11))).groupBy("access_key").agg(count("access_key").alias("frequency")).orderBy(desc("frequency")).show(10)
 
-def task_10(df):
+def task_10(db_name, collection_name):
+    client = MongoClient()
+    db = client[db_name]
+    db.bda_gh_torrent.create_index("downloader_id")
+    df = get_df_from_db(db_name, collection_name)
     start = time.time()
     print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
     end = time.time()
     print(end - start)
 
-def task_11(df):
+def task_11(db_name, collection_name):
+    client = MongoClient()
+    db = client[db_name]
+    db.bda_gh_torrent.drop_index("downloader_id_1")
+    df = get_df_from_db(db_name, collection_name)
     start = time.time()
     print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
     end = time.time()
@@ -166,10 +174,10 @@ if __name__ == '__main__':
     task_9(df)
     print()
     print("-----TASK 10-----")
-    task_10(df)
+    task_10(db_name, collection_name)
     print()
     print("-----TASK 11-----")
-    task_11(df)
+    task_11(db_name, collection_name)
     print()
     print("-----TASK 12-----")
     task_12(df2)
