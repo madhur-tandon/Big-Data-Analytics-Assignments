@@ -85,10 +85,7 @@ def task_10(df):
     print(end - start)
 
 def task_11(df):
-    start = time.time()
-    print(df.filter((df.downloader_id == 'ghtorrent-22') & ((df.logging_level == 'WARN') | (df.logging_level == 'INFO')) & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).distinct().rdd.map(eliminate_extra_info).distinct().count())
-    end = time.time()
-    print(end - start)
+    print("Skipping, exactly same as task 10 since no index can be made!")
 
 def task_12(df2):
     print(df2.count())
