@@ -41,6 +41,8 @@ def clean_up_text(record):
 spark = SparkSession.builder \
             .master("local[*]") \
             .appName("Spark with HDFS") \
+            .config("spark.driver.memory", "2g") \
+            .config("spark.executor.memory", "2g") \
             .getOrCreate()
 
 raw_df = spark.read \

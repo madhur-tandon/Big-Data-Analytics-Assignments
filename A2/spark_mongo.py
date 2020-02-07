@@ -69,6 +69,8 @@ spark = SparkSession.builder \
             .master("local[*]") \
             .appName("Spark with MongoDB") \
             .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1") \
+            .config("spark.driver.memory", "2g") \
+            .config("spark.executor.memory", "2g") \
             .getOrCreate()
 
 def get_df_from_db(db_name, collection_name):

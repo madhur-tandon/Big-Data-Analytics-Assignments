@@ -34,6 +34,8 @@ spark = SparkSession.builder \
             .master("local[*]") \
             .appName("Spark with Postgres") \
             .config("spark.driver.extraClassPath", "postgresql-42.2.6.jar") \
+            .config("spark.driver.memory", "2g") \
+            .config("spark.executor.memory", "2g") \
             .getOrCreate()
 
 def get_db_as_spark_dataframe(username, table_name):
