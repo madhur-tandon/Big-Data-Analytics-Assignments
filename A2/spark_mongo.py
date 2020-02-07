@@ -66,8 +66,8 @@ def load_csv_into_db(filename, db_name, collection_name):
     return db, collection
 
 spark = SparkSession.builder \
-            .master("local") \
-            .appName("Spark_with_MongoDB") \
+            .master("local[*]") \
+            .appName("Spark with MongoDB") \
             .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.11:2.4.1") \
             .getOrCreate()
 

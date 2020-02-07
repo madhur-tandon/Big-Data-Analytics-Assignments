@@ -31,7 +31,7 @@ def eliminate_extra_info(url_text):
                 return Row(repo=url_text[http_pos:i])
 
 spark = SparkSession.builder \
-            .master("local") \
+            .master("local[*]") \
             .appName("Spark with Postgres") \
             .config("spark.driver.extraClassPath", "postgresql-42.2.6.jar") \
             .getOrCreate()
