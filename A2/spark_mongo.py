@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession, types, Row
-from pyspark.sql.functions import desc, count, substring
+from pyspark.sql.functions import desc, count, instr, lit, col
 from pymongo import MongoClient
 import pandas as pd
 import time
@@ -97,14 +97,13 @@ def task_6(df):
     df.filter((df.retrieval_stage == 'api_client') & (df.operation_part.contains('Failed'))).groupBy(df.downloader_id).agg(count(df.downloader_id).alias("frequency")).orderBy(desc("frequency")).show(10)
 
 def task_7(df):
-    df.select(substring(df.timestamp, 12, 2).alias("hour")).groupBy("hour").agg(count("hour").alias("frequency")).orderBy(desc("frequency")).show(1)
+    df.withColumn("hour", col("timestamp").substr(instr(col("timestamp"), 'T')+1, lit(2))).groupBy("hour").agg(count("hour").alias("frequency")).orderBy(desc("frequency")).show(1)
 
 def task_8(df):
     df.filter((df.logging_level == 'WARN') & (df.retrieval_stage == 'api_client') & (df.operation_part.contains('repos/'))).select(df.operation_part).rdd.map(eliminate_extra_info).toDF().groupBy("repo").agg(count("repo").alias("frequency")).orderBy(desc("frequency")).show(1, False)
 
 def task_9(df):
-    # TODO
-    pass
+    df.filter((df.retrieval_stage != 'geolocator') & (df.operation_part.contains('Failed'))).withColumn("access_key", col("operation_part").substr(instr(col("operation_part"), 'Access')+8, lit(11))).groupBy("access_key").agg(count("access_key").alias("frequency")).orderBy(desc("frequency")).show(10)
 
 def task_10(df):
     start = time.time()
