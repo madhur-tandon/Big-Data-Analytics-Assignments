@@ -35,7 +35,7 @@ spark = SparkSession.builder \
             .appName("Spark with Postgres") \
             .config("spark.driver.extraClassPath", "postgresql-42.2.6.jar") \
             .config("spark.driver.memory", "2g") \
-            .config("spark.executor.memory", "2g") \
+            .config("spark.executor.memory", "8g") \
             .config("spark.executor.instances", "2") \
             .config("spark.executor.cores", "6") \
             .getOrCreate()

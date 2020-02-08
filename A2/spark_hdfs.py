@@ -42,7 +42,7 @@ spark = SparkSession.builder \
             .master("spark://127.0.0.1:7077") \
             .appName("Spark with HDFS") \
             .config("spark.driver.memory", "2g") \
-            .config("spark.executor.memory", "2g") \
+            .config("spark.executor.memory", "8g") \
             .config("spark.executor.instances", "2") \
             .config("spark.executor.cores", "6") \
             .getOrCreate()
