@@ -10,7 +10,7 @@ class MaxDictReservoirSampling(object):
         try:
             return self.dict[key]
         except Exception as e:
-            print(e)
+            pass
     
     def __setitem__(self, key, value):
         if key in self.dict:
@@ -44,10 +44,7 @@ if __name__ == '__main__':
             d[i] += 1
         else:
             d[i] = 1
-    print(len(set(keys)))
-    print(keys)
     print(d.dict)
-    print(d.counter)
-    for each_key in d:
-        print(each_key, keys.count(each_key))
-        assert d[each_key] == keys.count(each_key)
+    print('hi')
+    print(d[20])
+    print(d[50])
