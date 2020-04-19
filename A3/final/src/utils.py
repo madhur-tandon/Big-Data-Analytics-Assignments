@@ -34,17 +34,3 @@ class MaxDictReservoirSampling(object):
 
     def __len__(self):
         return len(self.dict)
-
-if __name__ == '__main__':
-    random.seed(42)
-    keys = [random.randint(0,30) for i in range(30)]
-    d = MaxDictReservoirSampling(max_size=10)
-    for pos, i in enumerate(keys):
-        if i in d:
-            d[i] += 1
-        else:
-            d[i] = 1
-    print(d.dict)
-    print('hi')
-    print(d[20])
-    print(d[50])
