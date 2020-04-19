@@ -54,16 +54,4 @@ class TweetSpout(Spout):
                 self.queue.task_done()
                 self.emit([tweet])
         except queue.Empty:
-            time.sleep(0.1) 
-
-# class WordSpout(Spout):
-#     outputs = ["word"]
-
-#     def initialize(self, stormconf, context):
-#         self.words = ["dog", "cat", "zebra", "elephant"]
-
-#     def next_tuple(self):
-#         word = random.choice(self.words)
-#         self.emit([word])
-#         time.sleep(1)
-
+            time.sleep(0.1)
