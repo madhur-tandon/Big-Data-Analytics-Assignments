@@ -5,22 +5,17 @@ import json
 
 app = Flask(__name__)
 r = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
-total_users = 0
 
 def event_stream():
-    global total_users
     pubsub = r.pubsub()
-    pubsub.subscribe('WordCountTopology')
+    pubsub.subscribe('SurpriseNumberTopology')
     for message in pubsub.listen():
+        print(message)
         data = message['data']
         if type(data) != int:
-            word, count = data.split(b'|')
-            # json_data = json.dumps(
-                # {'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'word': str(word),'value': int(count)})
-            total_users += int(count)
+            surprise_number, num_unique_users = data.decode().split("|")
             json_data = json.dumps(
-                {'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'word': str(word),'value': int(total_users)}
-            )
+                {'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),'surprise_number': float(surprise_number), 'num_unique_users': int(num_unique_users)})
             yield f"data:{json_data}\n\n"
 
 

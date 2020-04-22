@@ -42,10 +42,10 @@ class TweetSpout(Spout):
     outputs = ["tweet"]
 
     def initialize(self, stormconf, context):
-        self.queue = queue.Queue(maxsize = 1000)
+        self.queue = queue.Queue()
         self.stream_listener = TweetListener(self.queue)
         self.stream = tweepy.Stream(auth=api.auth, listener=self.stream_listener)
-        self.stream.filter(languages=["en"], track=["#corona", "#coronavirus", "#covid-19", "#lockdown"], is_async=True)
+        self.stream.filter(track=["#coronavirus", "#covid19"], is_async=True)
 
     def next_tuple(self):
         try:

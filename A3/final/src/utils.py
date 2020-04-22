@@ -3,6 +3,7 @@ import random
 class MaxDictReservoirSampling(object):
     def __init__(self, max_size):
         self.max_size = max_size
+        self.stream_counter = 0
         self.counter = 0
         self.dict = {}
 
@@ -13,6 +14,7 @@ class MaxDictReservoirSampling(object):
             pass
     
     def __setitem__(self, key, value):
+        self.stream_counter += 1
         if key in self.dict:
             self.dict[key] = value
         else:

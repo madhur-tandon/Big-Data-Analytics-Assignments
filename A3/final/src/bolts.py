@@ -3,54 +3,36 @@ from redis import StrictRedis
 from streamparse import Bolt
 from utils import MaxDictReservoirSampling
 
-DATE_FMT = "%Y-%m-%d %H:%M:%S"
-
-# class RedisWordCountBolt(Bolt):
-#     outputs = ["word", "count"]
-
-#     def initialize(self, conf, ctx):
-#         self.redis = StrictRedis()
-#         self.counter = {}
-#         self.total = 0
-
-#     def _increment(self, word, inc_by):
-#         if word not in self.counter:
-#             self.counter[word] = inc_by
-#         else:
-#             self.counter[word] += inc_by
-#         self.total += inc_by
-
-#     def process(self, tup):
-#         datetime_now = datetime.now().strftime(DATE_FMT)
-#         word = tup.values[0]
-#         count = self._increment(word, 10 if word == "dog" else 1)
-#         if self.total % 1000 == 0:
-#             self.logger.info("counted %i words", self.total)
-#         self.redis.publish("WordCountTopology", word + "|" + str(self.counter[word]))
-
-class RedisUserTweetCountBolt(Bolt):
-    outputs = ["user_id", "count"]
+class AMSBolt(Bolt):
+    outputs = ["surprise_number", "num_unique_users"]
 
     def initialize(self, conf, ctx):
-        self.redis = StrictRedis()
+        self.redis = StrictRedis(host='127.0.0.1', port=6379, db=0)
         self.reservoir = MaxDictReservoirSampling(10000)
-        self.total = 0
 
     def _increment(self, user_id, inc_by):
         if user_id not in self.reservoir:
             self.reservoir[user_id] = inc_by
         else:
             self.reservoir[user_id] += inc_by
-        self.total += inc_by
-        try:
-            return self.reservoir[user_id]
-        except:
-            return 0
+
+        value = self.reservoir[user_id]
+        if value != None:
+            return value
+        else:
+            return 'error'
+    
+    def ams_algorithm(self):
+        all_moments_sum = 0
+        for i in self.reservoir:
+            each_moment = (self.reservoir.stream_counter)*((2*self.reservoir[i]) - 1)
+            all_moments_sum += each_moment
+        surprise_number = all_moments_sum / len(self.reservoir)
+        return surprise_number
 
     def process(self, tup):
-        datetime_now = datetime.now().strftime(DATE_FMT)
         user_id = tup.values[0]
         count = self._increment(user_id, 1)
-        if self.total % 1000 == 0:
-            self.logger.info("counted %i words", self.total)
-        self.redis.publish("WordCountTopology", user_id + "|" + str(count))
+        surprise_number = self.ams_algorithm()
+        self.emit([surprise_number, len(self.reservoir)])
+        self.redis.publish("SurpriseNumberTopology", str(surprise_number) + "|" + str(len(self.reservoir)))

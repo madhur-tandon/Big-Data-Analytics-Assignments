@@ -33,9 +33,16 @@
         data: {
           labels: [],
           datasets: [{
-            label: "Total Users",
+            label: "Surprise Number",
             backgroundColor: 'rgb(255, 99, 132)',
             borderColor: 'rgb(255, 99, 132)',
+            data: [],
+            fill: false,
+          },
+          {
+            label: "Number of Unique Users",
+            backgroundColor: 'rgb(227, 181, 5)',
+            borderColor: 'rgb(227, 181, 5)',
             data: [],
             fill: false,
           }],
@@ -81,13 +88,14 @@
 
       source.onmessage = function (event) {
         const data = JSON.parse(event.data);
-        console.log(data);
         if (config.data.labels.length === 20) {
           config.data.labels.shift();
           config.data.datasets[0].data.shift();
+          config.data.datasets[1].data.shift();
         }
         config.data.labels.push(data.time);
-        config.data.datasets[0].data.push(data.value);
+        config.data.datasets[0].data.push(data.surprise_number);
+        config.data.datasets[1].data.push(data.num_unique_users);
         lineChart.update();
       }
     });
